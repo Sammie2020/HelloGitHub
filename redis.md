@@ -8,7 +8,7 @@
 
 KV键值、文档型数据库（mongoDB：基于分布式文件存储的数据库）、列存储数据库（HBase）、图关系数据库
 
-<img src="C:\Users\Sammi\Desktop\NoSQL四类对比图.jpg" alt="四者对比" style="zoom:50%;" />
+<img src="images/NoSQL四类对比图.jpg" alt="四者对比" style="zoom:50%;" />
 
 ### 分布式数据库原理
 
@@ -22,7 +22,7 @@ A:availability 可用性
 
 **P:partition tolerance 分区容错性**
 
-<img src="C:\Users\Sammi\Desktop\CAP.png" alt="CAP" style="zoom:50%;" />
+<img src="images/CAP.png" alt="CAP" style="zoom:50%;" />
 
 #### BASE
 
@@ -78,7 +78,7 @@ KV、 CACHE、persistence　[中文官网](http://www.redis.cn/)  [官网](https
 
 如果先运行make发现没有安装gcc再去安装gcc的话，二次运行make会报这个错
 
-<img src="C:\Users\Sammi\Desktop\make报错.png" alt="make报错" style="zoom:38%;" />
+<img src="images/make报错.png" alt="make报错" style="zoom:38%;" />
 
 需要先把第一次运行make安装的东西先删掉，然后再make
 
@@ -92,7 +92,7 @@ KV、 CACHE、persistence　[中文官网](http://www.redis.cn/)  [官网](https
 
 make执行时报错，如图
 
-<img src="C:\Users\Sammi\Desktop\make报错2.png" alt="make报错2" style="zoom:30%;" />
+<img src="images/make报错2.png" alt="make报错2" style="zoom:30%;" />
 
 [解决方法](https://blog.csdn.net/realize_dream/article/details/106483499?utm_medium=distribute.pc_relevant.none-task-blog-baidujs-5) (主要是升级gcc这几步)
 
@@ -738,7 +738,7 @@ redis根据分数来为集合中的成员进行从小到大的排序。
 
    Maxmemory-policy
 
-   <img src="C:\Users\Sammi\Desktop\redis过期策略.png" alt="redis过期策略" style="zoom:38%;" />
+   <img src="images/redis过期策略.png" alt="redis过期策略" style="zoom:38%;" />
 
    LRU：最近最少使用
 
@@ -787,7 +787,7 @@ save 秒钟 写操作次数
 
 快照触发条件：(默认三种，满足其一即可)
 
-<img src="C:\Users\Sammi\Desktop\RDB.png" alt="保存快照默认配置" style="zoom:38%;" />
+<img src="images/RDB.png" alt="保存快照默认配置" style="zoom:38%;" />
 
 1分钟内改了1万次，
 
@@ -852,7 +852,7 @@ fork的时候，内存中的数据被克隆了一份，大致2倍的膨胀性需
 
 ###### 小总结
 
-<img src="C:\Users\Sammi\Desktop\rdb总结.png" alt="总结" style="zoom:38%;" />
+<img src="images/rdb总结.png" alt="总结" style="zoom:38%;" />
 
 
 
@@ -937,7 +937,7 @@ aof运行效率慢于rdb，每秒同步策略效率较好，不同步效率和rd
 
 ###### 小总结
 
-<img src="C:\Users\Sammi\Desktop\aof总结.png" alt="aof总结" style="zoom:38%;" />
+<img src="images/aof总结.png" alt="aof总结" style="zoom:38%;" />
 
 
 
@@ -961,7 +961,7 @@ AOF持久化方式记录每次对服务器写的操作，当服务器重启的�
 
 **性能建议：**
 
-<img src="C:\Users\Sammi\Desktop\性能建议.png" alt="性能建议" style="zoom:38%;" />
+<img src="images/性能建议.png" alt="性能建议" style="zoom:38%;" />
 
 
 
@@ -1197,9 +1197,9 @@ watch指令，类似乐观锁，事务提交时，如果key的值已被别的客
 
 订阅/发布消息图
 
-<img src="C:\Users\Sammi\Desktop\订阅关系.png" alt="订阅" style="zoom:38%;" />
+<img src="images/订阅关系.png" alt="订阅" style="zoom:38%;" />
 
-<img src="C:\Users\Sammi\Desktop\发送消息.png" alt="发布消息" style="zoom:38%;" />
+<img src="images/发送消息.png" alt="发布消息" style="zoom:38%;" />
 
 ##### 命令
 
