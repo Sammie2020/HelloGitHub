@@ -16,5 +16,5 @@ polymorphism:多态
 inheritance:继承
 preorder traversing：前序遍历
 postorder traversing：后序遍历
-
-
+retain:保留。collection接口有个retainAll(Collection<?> c)方法，仅保留在集合c存在的元素,返回boolean
+Retrieves:找回，取回。Queue接口定义了4种方法可以获得队列的首个元素；remove():返回并移除首个元素，队列为空则抛出异常；poll():返回并移除首个元素，队列为空则返回null：element():返回首个元素，但不移除，队列为空抛出异常；peek():返回首个元素，但不移除，队列为空返回null
