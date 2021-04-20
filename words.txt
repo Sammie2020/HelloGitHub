@@ -1,0 +1,20 @@
+OLTP		On-Line Transaction Processing  联机事务处理
+OLAP		On-Line Analytical Processing 联机分析处理
+事务：一组原子性的SQL查询，或者说一个独立的工作单元。即事务内的语句，要么全部执行成功，要么全部执行失败。
+Start Trasaction 开启事务
+commit 提交事务将修改的数据持久保存
+rollback 撤销所有修改
+良好的事务处理系统必须具备ACID标准特性，即原子性（atomicity）、一致性（consistency）、隔离性（isolation）、持久性（durability）
+exclusive Lock  排他锁,也叫写锁（write lock），一个写锁会阻塞其他的写锁和读锁
+MVVM           Model-View-ViewModel
+variant        adj 变异的 ; n 变形  
+eg:将div里面的字体设置为小型大写字母字体
+div {
+font-variant:small-caps;
+}
+polymorphism:多态
+inheritance:继承
+preorder traversing：前序遍历
+postorder traversing：后序遍历
+
+
