@@ -1,2 +1,2 @@
-# HelloGitHub
-This project is to record what I have learned for review or record daily problems for follow-up solution.
+# HelloGitHub -Java
+This branch is to record the basic knowledge of Java.
