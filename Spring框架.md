@@ -1,3 +1,11 @@
+### 写在前面
+
+[视频]:https://www.bilibili.com/video/BV1Vf4y127N5
+
+这是一篇视频笔记，针对自我实际情况，增加了部分扩展，webFlux部分不太懂，后续细究。
+
+笔记涉及代码完整版见[springdemo]()   及 [springWebFluxDemo]()
+
 ### Spring 5 框架
 
 #### Spring的概念
@@ -30,11 +38,11 @@ Spring特点
 
 **2.入门案例**
 
-<img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\Spring5架构图.png" alt="Spring5" style="zoom:50%;" />
+<img src="Spring5架构图.png" alt="Spring5" style="zoom:50%;" />
 
 1.新建Maven工程，导入IOC基本包
 
-<img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\IOC基本核心包.png" alt="IOC基本核心包" style="zoom:50%;" />
+<img src="IOC基本核心包.png" alt="IOC基本核心包" style="zoom:50%;" />
 
 ```xml
  <dependencies>
@@ -130,10 +138,6 @@ public class test {
 }
 ```
 
-
-
-
-
 #### IOC容器
 
 **IOC底层原理**
@@ -162,7 +166,7 @@ Spring提供IOC容器的两种方式：（两个接口）
 
 *加载配置文件时会把在配置文件的对象进行创建*
 
-​		<img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\ApplicationContext两个实现类.png" alt="ApplicationContext两个实现类" style="zoom:67%;" />
+​		<img src="ApplicationContext两个实现类.png" alt="ApplicationContext两个实现类" style="zoom:67%;" />
 
 FileSystemXmlApplicationContext：（磁盘）文件全路径
 
@@ -895,7 +899,7 @@ P名称空间注入（了解）：简化基于xml的注入
 
    
 
-<img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\bean的生命周期.png" alt="bean生命周期" style="zoom:50%;" />
+<img src="bean的生命周期.png" alt="bean生命周期" style="zoom:50%;" />
 
 
 
@@ -965,7 +969,7 @@ P名称空间注入（了解）：简化基于xml的注入
        }
    ```
 
-   <img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\bean完整的生命周期.png" alt="bean完整的生命周期" style="zoom:50%;" />
+   <img src="bean完整的生命周期.png" alt="bean完整的生命周期" style="zoom:50%;" />
 
 6.IOC操作Bean管理（xml自动装配）
 
@@ -1442,7 +1446,7 @@ public class SpringConfig {
 
 3. 在项目工程里面引入AOP相关依赖
 
-   <img src="C:\Users\Sammi\Desktop\面试\Java学习\Spring\AspectJ依赖.png" style="zoom:50%;" />
+   <img src="AspectJ依赖.png" style="zoom:50%;" />
 
 
 
@@ -1677,7 +1681,7 @@ public class SpringConfig {
 
    
 
-**JdbcTemplate**
+#### JdbcTemplate
 
 **概念和准备**
 
@@ -2018,4 +2022,1070 @@ public class SpringConfig {
    ```
 
 ​        （4）JdbcTemplate实现批量删除操作
+
+​	 
+
+```java
+		 @Override
+public void batchDeleteBook(List<Object[]> args) {
+    String sql ="delete from  book  where bookId=?";
+    int[] ints = jdbcTemplate.batchUpdate(sql,args);
+    System.out.println(Arrays.toString(ints));
+}
+```
+
+​			测试
+
+```java
+@Test
+public void testJdbcTemplate9(){
+    ApplicationContext context = new ClassPathXmlApplicationContext("bean11.xml");
+    BookService bookService = context.getBean("bookService", BookService.class);
+    Object[] o1 = {"3"};
+    Object[] o2 = {"4"};
+    List<Object[]> list = new ArrayList<>();
+    list.add(o1);
+    list.add(o2);
+    bookService.batchDelete(list);
+}
+```
+
+
+
+#### 事务操作
+
+**事务概念**
+
+1. 什么是事务
+
+   （1）事务是数据库操作最基本单元，逻辑上一组操作，要么都成功，如果有一个失败所有操作都失败。
+
+   （2）典型场景：银行转账
+
+   lucy 转账100 元给mary
+
+   lucy少100，mary多100
+
+2. 事务四个特性（ACID）
+
+   （1）原子性
+
+   （2）一致性
+
+   （3）隔离性
+
+   （4）持久性
+
+3. 案例演示【这part代码稍微改了下】
+
+   ```java
+   @Repository
+   public class UserDaoImpl implements UserDao{
+       @Autowired
+       private JdbcTemplate jdbcTemplate;
+   
+       @Override
+       public void addMoney(User user) {
+           String sql ="update account set money=money+?  where user=? ";
+           int i = jdbcTemplate.update(sql,user.getMoney(),user.getUser());
+           System.out.println("add :"+i);
+       }
+   
+       @Override
+       public void reduceMoney(User user) {
+           String sql ="update account set money=money-?  where user=? ";
+           int i = jdbcTemplate.update(sql,user.getMoney(),user.getUser());
+           System.out.println("reduce :"+i);
+       }
+   }
+   
+   ```
+   
+   ```java
+   @Service("userServiceTx")//因为不是新建项目，所有这里需要指定别名，避免重名
+   public class UserService {
+       @Autowired
+       private UserDao userDao;
+       public void accountMoney(User Remitter ,User  Payee){
+           userDao.reduceMoney(Remitter);
+           userDao.addMoney(Payee);
+       }
+   
+   }
+   
+   ```
+   
+   注意：如果存在同名的userService，在注解上标注别名，不然getBean不知道创建哪个。
+   
+   ```
+   org.springframework.beans.factory.BeanDefinitionStoreException: Unexpected exception parsing XML document from class path resource [bean11.xml]; nested exception is org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'userService' for bean class [org.example.spring.tx.service.UserService] conflicts with existing, non-compatible bean definition of same name and class [org.example.spring.service.UserService]
+   
+   	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.doLoadBeanDefinitions(XmlBeanDefinitionReader.java:420)
+   	at org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions(XmlBeanDefinitionReader.java:337)
+   	
+   ```
+   
+   测试
+   
+   ```java
+     @Test
+       public void testTx(){
+           ApplicationContext context = new ClassPathXmlApplicationContext("bean11.xml");
+           UserService userService = context.getBean("userService", UserService.class);
+           //    Remitter汇款人  Payee收款人
+           User Remitter = new User();
+           Remitter.setMoney(100);
+           Remitter.setUser("lucy");
+           User  Payee = new User();
+           Payee.setMoney(100);
+           Payee.setUser("mary");
+           userService.accountMoney(Remitter,Payee);
+       }
+   ```
+   
+   **示例存在问题：**减少金额成功，但是增加金额失败，这种情况怎么处理？
+   
+   **使用事务解决**
+
+
+
+**事务操作过程**
+
+```java
+@Service("userServiceTx")
+public class UserService {
+    @Autowired
+    private UserDao userDao;
+    public void accountMoney(User Remitter ,User  Payee){
+       try {
+           //1.开启事务
+           //2.业务操作
+           userDao.reduceMoney(Remitter);
+           //模拟异常
+           int i = 10 / 0;
+           userDao.addMoney(Payee);
+           //3.没有发生异常，提交事务
+
+       }catch (Exception e){
+           //4.出现异常，事务回滚
+
+       }
+    }
+```
+
+**事务操作(Spring事务管理介绍)**
+
+1. 事务添加到JavaEE三层结构里面Service层（业务逻辑层）
+
+2. 在Spring进行事务管理操作
+
+   （1）有两种方式：编程式事务管理和声明式事务管理（使用）
+
+3. 声明式事务管理
+
+   （1）基于注解方式（使用）
+
+   （2）基于xml配置文件方式
+
+4. 在Spring进行声明式事务管理，底层使用AOP
+
+5. Spring事务管理API
+
+   （1）提供一个接口，代表事务管理器，这个接口针对不同的框架提供不同的实现类
+
+   ![](事务接口.png)
+
+   
+
+**事务操作(注解声明式事务管理)**
+
+1. 在Spring配置文件配置事务管理器
+
+   ```xml
+     <!--创建事务管理器-->
+       <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+           <!--注入数据源-->
+           <property name="dataSource" ref="dataSource"></property>
+       </bean>
+   ```
+
+2. 在Spring配置文件中，开启事务注解
+
+   （1）在Spring配置文件引入名称空间tx
+
+   ```xml
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xmlns:tx="http://www.springframework.org/schema/tx"
+          xsi:schemaLocation="
+   	http://www.springframework.org/schema/beans
+   	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+   	http://www.springframework.org/schema/context
+   	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+   	http://www.springframework.org/schema/tx
+   	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+   ```
+
+   （2）开启事务注解
+
+   ```xml
+   <!--开启事务注解-->
+       <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+   
+   ```
+
+   
+
+3. 在Service类上面（或者service类里面方法上面）添加事务注解
+
+   （1）@Tranactional，这个注解添加到类上面，也可以添加到方法上面
+
+   （2）如果把这个注解添加类上面，这个类里面所有的方法都添加事务
+
+   （3）如果把这个注解添加方法上面，为这个方法添加事务
+
+   ```java
+   @Service("userServiceTx")
+   @Transactional
+   public class UserService {
+   ```
+
+**事务操作(声明式事务管理参数配置)**
+
+1. 在Service类上面（或者service类里面方法上面）添加事务注解@Tranactional，这个注解里面可以配置事务相关参数
+
+2. propagation ： 事务传播行为
+
+   （1）多事务方法直接进行调用，这个过程中是事务是如何进行管理的
+
+   （2）事务方法：对数据库表数据进行变化的操作
+
+   （3）Spring框架事务传播行为有7种：
+
+   <img src="两种常用的传播行为说明.png" style="zoom:50%;" />
+
+   - **required：如果有事务在运行，当前的方法就在这个事务内运行，否则，就启动一个新的事务，并在自己的事务内运行。(默认)**
+
+   - **required_new：当前的方法必须启动新事务，并在它自己的事务内运行，如果有事务正在运行，应该将它挂起。**
+
+   - **supports**：支持当前事务，如果没有当前事务，就以非事务方法执行。
+
+   - **mandatory**：使用当前事务，如果没有当前事务，就抛出异常。
+
+   - **not_supported**：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+
+   - **never**：以非事务方式执行操作，如果当前事务存在则抛出异常。
+
+   - **nested**：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与required类似的操作
+
+     
+
+3. isolation ： 事务隔离级别
+
+   （1）事务有特性称为隔离性，多事务操作之间不会产生影响。不考虑隔离性产生很多问题
+
+   （2）三个读问题：脏读、不可重复读、虚（幻）读
+
+   （3）脏读：一个未提交事务读取到另一个未提交事务的数据。
+
+   （4）不可重复度（是一种现象，不一定是问题）：一个未提交事务读取到另一提交事务修改数据
+
+   （5）幻读：一个未提交事务读取到另一提交事务添加数据。（eg：两次查询结果集不一样）
+
+   （6）通过设置事务隔离级别，解决读问题
+
+   <img src="事务隔离级别.png" style="zoom:50%;" />
+
+   ##### TransactionDefinition接口中定义了五个表示隔离级别的常量，其中ISOLATION_DEFAULT：使用后端数据库默认的隔离界别，MySQL默认采用的REPEATABLE_READ隔离级别，Oracle默认采用的READ_COMMITTED隔离级别。
+
+4. timeout ： 超时时间
+
+   （1）事务需要在一定时间内进行提交，如果不提交进行回滚
+
+   （2）默认值是-1，设置时间以秒为单位进行计算
+
+5. readOnly ：是否只读
+
+   （1）读：查询操作，写：添加修改删除操作
+
+   （2）readOnly默认值false，表示可以查询，可以添加修改删除操作
+
+   （3）设置readOnly值是true，设置成true之后，只能查询
+
+   
+
+6. rollbackFor：回滚
+
+   （1）设置出现哪些异常进行事务回滚
+
+7. noRollbackFor：不回滚
+
+   （1）设置出现哪些异常不进行事务回滚
+
+   
+
+**事务操作(xml声明式事务管理)**
+
+1. 在Spring配置文件中进行配置
+
+   ①配置事务管理器
+
+   ②配置通知
+
+   ③配置切入点和切面
+
+   ```xml
+    <!--1.创建事务管理器-->
+       <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+           <!--注入数据源-->
+           <property name="dataSource" ref="dataSource"></property>
+       </bean>
+       <!--2.配置通知-->
+       <tx:advice id="txAdvice">
+           <tx:attributes>
+               <!--指定哪个规则的方法上添加事务-->
+               <tx:method name="accountMoney" propagation="REQUIRED"/><!--或者account*-->
+           </tx:attributes>
+       </tx:advice>
+       <!--3.配置切入点和切面-->
+       <aop:config>
+           <!--配置切入点-->
+           <aop:pointcut id="pt" expression="execution(* org.example.spring.tx.service.*(..))"></aop:pointcut>
+           <!--配置切面-->
+           <aop:advisor advice-ref="txAdvice" pointcut-ref="pt"></aop:advisor>
+       </aop:config>
+   ```
+
+   
+
+控制台报错如下，原因是切入点expression写错了。
+
+```she
+Caused by: java.lang.IllegalArgumentException: warning no match for this type name: org.example.spring.tx.service [Xlint:invalidAbsoluteTypeName]
+	at org.aspectj.weaver.tools.PointcutParser.parsePointcutExpression(PointcutParser.java:319)
+	at org.springframework.aop.aspectj.AspectJExpressionPointcut.buildPointcutExpression(AspectJExpressionPointcut.java:227)
+```
+
+```xml
+ <!--错误写法--> 
+<aop:pointcut id="pt" expression="execution(* org.example.spring.tx.service.*(..))"></aop:pointcut>
+ <!--正确写法-->
+ <aop:pointcut id="pt" expression="execution(* org.example.spring.tx.service.*.*(..))"></aop:pointcut>
+```
+
+
+
+**事务操作(完全注解声明式事务管理)**
+
+```java
+@Configuration//配置类
+@ComponentScan(basePackages = "org.example") ///开启组件扫描
+@EnableTransactionManagement //开启事务
+public class TxConfig {
+    //创建数据库连接池
+    @Bean
+    public DruidDataSource getDruidDataSource(){
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://192.168.0.113:3306/mydatabase");
+        dataSource.setUsername("root");
+        dataSource.setPassword("lsm153");
+        return dataSource;
+    }
+    //创建JdbcTemplate
+    @Bean
+    public JdbcTemplate getJdbcTemplate(DataSource dataSource){
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        jdbcTemplate.setDataSource(dataSource);
+        return jdbcTemplate;
+    }
+    //创建事务管理器
+    @Bean
+    public DataSourceTransactionManager getDataSourceTransactionManager(DataSource dataSource){
+        DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+        dataSourceTransactionManager.setDataSource(dataSource);
+        return dataSourceTransactionManager;
+    }
+
+}
+```
+
+**扩展笔面常考题：@Component 和 @Bean的区别？**
+
+1. @Component注解表明一个类会作为组件类，并告知Spring要为这个类创建bean。
+
+2. @Bean注解告诉Spring这个方法将会返回一个对象，这个对象要注册为Spring应用上下文中的bean。通常方法体中包含了最终产生bean实例的逻辑。
+
+   两者的目的是一样的，都是注册bean到Spring容器中。
+
+区别：
+
+1. @Component注解作用于类，而@Bean注解作用于方法。
+
+2. @Component通常是通过类路径扫描来自动侦测及自动装配到Spring容器中，可以使用@ComponentScan注解定义要扫描的路径从中找到标识了需要装配的类自动Spring的bean容器中。
+
+   @Bean注解通常是在标有该注解的方法中定义产生这个bean，需要在配置类中使用，即类上需要加上@Configuration注解。
+
+3. @Bean注解比@Component注解的自定义性更强，而且很多地方只能通过@Bean注解来注册bean。比如当引用第三方库的类需要装配到Spring容器的时候，就只能通过@Bean注解来实现。
+
+#### Spring5框架新功能
+
+[github地址](https://github.com/spring-projects/spring-framework/wiki/What%27s-New-in-Spring-Framework-5.x)
+
+1. **整个Spring5框架的代码基于Java8，运行时兼容JDK9，许多不建议使用的类和方法在代码库中删除**
+
+2. **Spring5.0框架自带了通用的日志封装**
+
+   （1）Spring5已移除Log4jConfigListener，官方建议使用Log4j2
+
+   （2）Spring5框架整合Log4j2
+
+   ​		①引入jar包
+
+   ```xml
+    <!--log4j2-->
+           <dependency>
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-api</artifactId>
+               <version>1.7.30</version>
+           </dependency>
+           <dependency>
+               <groupId>org.apache.logging.log4j</groupId>
+               <artifactId>log4j-slf4j-impl</artifactId>
+               <version>2.11.2</version>
+           </dependency>
+           <dependency>
+               <groupId>org.apache.logging.log4j</groupId>
+               <artifactId>log4j-api</artifactId>
+               <version>2.11.2</version>
+           </dependency>
+           <dependency>
+               <groupId>org.apache.logging.log4j</groupId>
+               <artifactId>log4j-core</artifactId>
+               <version>2.11.2</version>
+           </dependency>
+   ```
+
+   ​		②创建log4j2.xml [配置详解](https://blog.51cto.com/u_1197822/2157668#h0)
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8" ?>
+   <!--日志级别以及优先级排序: OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
+   <!--Configuration后面的status,这个用于设置log4j2自身内部的信息输出,可以不设置,当设置成trace时,可看到log4j2内部各种详细输出-->
+   <!--monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身,设置间隔秒数-->
+   <configuration status="INFO" monitorInterval="1800">
+       <!--定义所有的appender-->
+       <appenders>
+           <console name="Console" target="SYSTEM_OUT"></console>
+           <!--控制日志输出的格式-->
+           <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSSS}[%t]%-5level %logger{36}-%msg%n"></PatternLayout>
+       </appenders>
+       <!--定义logger，只定义了logger并引入的appender，appender才会生效-->
+       <!--root:用来指定项目的根日志，如果没有单独指定Logger，则会使用root作为默认的日志输出-->
+       <loggers>
+           <root level="info">
+               <appender-ref ref="Console"></appender-ref>
+           </root>
+       </loggers>
+   </configuration>
+   ```
+
+3. **Spring5框架核心容器支持吃@Nullable注解**
+
+   （1）@Nullable注解可以使用在方法上面、属性上面、参数上面，表示方法返回可以为空，属性值可以为空，参数值可以为空
+
+   
+
+4. **Spring5核心容器支持函数式风格GenericApplicationContext**
+
+   ```java
+     //函数式风格创建对象，交给spring进行管理
+       @Test
+       public void test01(){
+           //创建GenericApplicationContext对象
+           GenericApplicationContext context = new GenericApplicationContext();
+           //调用context方法对象注册
+           context.refresh();
+           context.registerBean(User.class,()->new User());
+           //获取在spring注册的对象
+           User user = (User) context.getBean("org.example.spring.entity.User");
+           System.out.println(user);
+           context.registerBean("user1",User.class,()->new User());
+           //获取在spring注册的对象
+           User user1 = (User) context.getBean("user1");
+           System.out.println(user1);
+       }
+   ```
+
+   
+
+5. **Spring5支持整合Junit5**
+
+   （1）整合Junit4
+
+   ​	①引入Spring相关针对测试依赖
+
+   ```xml
+   <!--整合Junit4-->
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-test</artifactId>
+       <version>5.2.2.RELEASE</version>
+   </dependency>
+   <dependency>
+       <groupId>junit</groupId>
+       <artifactId>junit</artifactId>
+       <version>4.12</version>
+       <scope>test</scope>
+   </dependency>
+   <!--整合Junit4-->
+   ```
+
+   ​    ②创建测试类
+
+   ```java
+   @RunWith(SpringJUnit4ClassRunner.class) //单元测试框架
+   @ContextConfiguration("classpath:bean11.xml") //加载配置文件
+   public class JTest4 {
+       @Autowired
+       UserService userService;
+       @Test
+       public void test1(){
+           User Remitter = new User();
+           Remitter.setMoney(100);
+           Remitter.setUser("lucy");
+           User  Payee = new User();
+           Payee.setMoney(100);
+           Payee.setUser("mary");
+           userService.accountMoney(Remitter,Payee);
+       }
+   }
+   ```
+
+   （2）整合Junit5
+
+   ​	①引入Junit5的依赖
+
+   ```xml
+   <!--整合Junit5-->
+   <dependency>
+       <groupId>org.junit.jupiter</groupId>
+       <artifactId>junit-jupiter</artifactId>
+       <version>RELEASE</version>
+       <scope>test</scope>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-test</artifactId>
+       <version>5.2.2.RELEASE</version>
+   </dependency>
+   
+   <!--整合Junit5-->
+   ```
+
+   ​	②创建测试类
+
+   ```java
+   @ExtendWith(SpringExtension.class)
+   @ContextConfiguration("classpath:bean11.xml")
+   public class JTest5 {
+       @Autowired
+       UserService userService;
+       @Test
+       public void test1(){
+           User Remitter = new User();
+           Remitter.setMoney(100);
+           Remitter.setUser("lucy");
+           User  Payee = new User();
+           Payee.setMoney(100);
+           Payee.setUser("mary");
+           userService.accountMoney(Remitter,Payee);
+       }
+   }
+   ```
+
+   ​	③使用一个复合注解替代上面两个注解
+
+   ```java
+   @SpringJUnitConfig(locations = "classpath:bean11.xml")
+   public class JTest5 {
+       @Autowired
+       UserService userService;
+       @Test
+       public void test1(){
+           User Remitter = new User();
+           Remitter.setMoney(100);
+           Remitter.setUser("lucy");
+           User  Payee = new User();
+           Payee.setMoney(100);
+           Payee.setUser("mary");
+           userService.accountMoney(Remitter,Payee);
+       }
+   }
+   ```
+
+6. Spring5框架新功能**SpringWebFlux**
+
+   **SpringWebFlux介绍** [官网介绍](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
+
+   （1）是Spring5添加新的模块，用于web开发，功能和SpringMVC类似，WebFlux使用当前一种比较流行的响应式编程出现的框架。
+
+   （2）使用传统web框架，比如SpringMVC、Struts，这些基于Servlet容器，WebFlux是一种异步非阻塞的框架，异步非阻塞的框架在servlet3.1以后才支持，核心是基于Reactor的相关API实现。
+
+   （3）什么是异步非阻塞
+
+   * 异步同步
+   * 非阻塞和阻塞
+
+   ** 上面针对对象不一样
+
+   ** **异步和同步针对调用者**，调用者发送请求，如果等着对方回应之后才去做其他事情就是同步，如果发送请求之后不等着对方回应就去做其他事情就是异步
+
+   ** **阻塞和非阻塞针对被调用者**，被调用者收到请求之后，做完请求任务之后才给出反馈就是阻塞，收到请求之后马上给出反馈然后再去做事情就是非阻塞。
+
+   （4）webFlux特点
+
+   ①非阻塞式：在有限资源下，提高系统吞吐量和伸缩性，以Reactor为基础实现响应式编程
+
+   ②函数式编程：Spring5框架基于java下，webFlux使用java8函数式编程方式实现路由请求
+
+   （5）比较SpringMVC 和 WebFlux
+
+   <img src="spring-mvc-and-webflux-venn.png" alt="SpringMVC 和 WebFlux" style="zoom:50%;" />
+
+   
+
+   ​    ①上面两个框架都可以使用注解方式，都运行在Tomcat等容器中
+
+   ​	②SpringMVC使用命令式编程，WebFlux采用异步响应式编程
+
+   [如何选择？](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html#webflux-framework-choice)
+
+   eg:网关、远程服务调用--webFlux
+
+   
+
+   **响应式编程**
+
+   (1)什么是响应式编程
+
+   ​		响应式编程是一种面向数据流和变化传播的编程范式。这意味着可以在编程语言中很方便地表达静态或动态的数据流，而相关的计算模型会自动将变化的值通过数据流进行传播。
+
+   ​		电子表格程序就是响应式编程的一个例子。单元格可以包含字面值或类似"=B1+C1"的公式，而包含公式的单元格的值会依据其他单元格的值的变化而变化。
+
+   （2）响应式编程（Java实现）
+
+   ①Java8及其之前版本
+
+   **提供的观察者模式两个类（Observer和Observable）**
+
+   ```java
+   public class ObserverDemo extends Observable {
+   
+       public static void main(String[] args) {
+           ObserverDemo observer = new ObserverDemo();
+           //添加观察者
+           observer.addObserver((o,arg)->{
+               System.out.println("发生变化");
+           });
+           observer.addObserver((o,arg)->{
+               System.out.println("手动被观察者通知，准备变化");
+           });
+           observer.setChanged();//数据变化
+           observer.notifyObservers();//通知
+       }
+   }
+   ```
+
+   PS：idea使用lambda Java报错 set language level to 8报错
+
+       idea配置支持lambda：
+       File -> Project Structure -> Modules ->  Language level, 选择: 8-Lambdas, type annotations etc.
+       
+       File -> Project Structure -> Project  ->  Project language level, 选择: 8-Lambdas, type annotations etc.
+   编译报错：File ->Setting ->Build,Execution,Deployment -> Compiler -> Java Compiler
+
+   ②Java8之后版本
+
+   ```java
+   
+   public class Demo {
+       public static void main(String[] args) {
+           Flow.Publisher<String> publisher = subscriber -> {
+               subscriber.onNext("1");//1
+               subscriber.onNext("2");//2
+               subscriber.onError(new RuntimeException("出错"));
+   //            subscriber.onComplete();
+           };
+           publisher.subscribe(new Flow.Subscriber<String>() {
+               @Override
+               public void onSubscribe(Flow.Subscription subscription) {
+                   subscription.cancel();
+               }
+   
+               @Override
+               public void onNext(String item) {
+                   System.out.println(item);
+               }
+   
+               @Override
+               public void onError(Throwable throwable) {
+                   System.out.println(throwable);
+               }
+   
+               @Override
+               public void onComplete() {
+   
+               }
+           });
+       }
+   }
+   ```
+
+   **(3)响应式编程（Reactor实现）**
+
+   ①响应式编程操作中，Reactor满足Reactive规范框架
+
+   ②Reactor有两个核心类，Mono和Flux，这两个类实现接口Publisher，提供丰富操作符。Flux对象实现发布者，返回Nge元素；Mono实现发布者，返回0或者1个元素
+
+   ③Flux和Mono都是数据流的发布者，使用Flux和Mono都可以发出三种数据信号：元素值、错误信号、完成信号，错误信号和完成信号都表示终止信号，终止信号用来告诉订阅者数据流结束了，错误信号终止数据流同时把错误信息传递给订阅者
+
+   <img src="Flux和Mono图解.png" alt="Flux和Mono" style="zoom:50%;" />
+
+   
+
+   
+
+   
+
+   (4)代码演示Flux 和 Mono
+
+   ①引入依赖
+
+   ```xml
+   <!--reactor依赖-->
+   <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-core</artifactId>
+      <version>3.1.5.RELEASE</version>
+   </dependency>
+   <!--reactor依赖-->
+   ```
+
+   ②编写代码
+
+   ```java
+   public class TestReactor {
+       public static void main(String[] args) {
+           //just方法直接声明
+           Flux.just(1,2,3,4);
+           Mono.just(1);
+           //其他方法
+           Integer[] array = {1,2,3,4};
+           Flux.fromArray(array);
+   
+           List<Integer> list = Arrays.asList(array);
+           Flux.fromIterable(list);
+   
+           Stream<Integer> stream = list.stream();
+           Flux.fromStream(stream);
+       }
+   }
+   ```
+
+   （5）三种信号特点
+
+   错误信号和完整信号都是终止信号，不能共存的
+
+   如果没有发送任务元素值，而是直接发送错误或者完成信号，表示是空数据流
+
+   如果没有错误信号，没有完成信号，表示无限数据流
+
+   (6)调用just方法或者其他方法只是声明数据流，数据流并没有发出，只有进行订阅之后才会触发数据流，不订阅什么都不会
+
+   ```java
+   Flux.just(1,2,3,4).subscribe(System.out::print);
+   Mono.just(1).subscribe(System.out::print);
+   ```
+
+   （7）操作符：对数据流进行一道道操作，称为操作符，比如工厂流水线
+
+   ①map 元素映射成新元素
+
+   <img src="map操作符.png" style="zoom:50%;" />
+
+   ②flatMap 元素映射为流
+
+   <img src="flatMap操作符.png" style="zoom:50%;" />
+
+   **WebFlux执行流程和核心API**
+
+   SpringWebFlux基于Reactor，默认容器是Netty，Netty是高性能的NIO框架
+
+   （1）Netty
+
+   BIO 同步阻塞
+
+   <img src="BIO.png" style="zoom:50%;" />
+
+   NIO 同步非阻塞
+
+   <img src="NIO.png" style="zoom:50%;" />
+
+   （2）SpringWebFlux执行过程和SpringMVC相似
+
+   |            | SpringWebFlux     | SpringMVC         |
+   | ---------- | ----------------- | ----------------- |
+   | 核心控制器 | DispatcherHandler | DispatcherServlet |
+
+   SpringWebFlux 核心控制器DispatcherHandler，实现接口WebHandler
+
+   <img src="WebHandler.png" style="zoom:50%;" />
+
+   ```java
+    public Mono<Void> handle(ServerWebExchange exchange) {//存放http请求响应信息
+           return this.handlerMappings == null ? this.createNotFoundError() : Flux.fromIterable(this.handlerMappings).concatMap((mapping) -> {
+               return mapping.getHandler(exchange);//根据请求地址获取对应的Mapping
+           }).next().switchIfEmpty(this.createNotFoundError()).flatMap((handler) -> {
+               return this.invokeHandler(exchange, handler);//调用具体的业务方法
+           }).flatMap((result) -> {
+               return this.handleResult(exchange, result);//处理结果返回
+           });
+       }
+   ```
+
+   （3）SpringWebFlux里面DispatcherHandler，负责请求的处理
+
+   HandlerMapping：请求查询到处理的方法
+
+   HandlerAdapter：真正负责请求处理
+
+   HandlerResultHandler：响应结果处理
+
+   （4）SpringWebFlux实现函数式编程，两个接口：RouterFunction（路由处理） 和 HandlerFunction（处理函数）
+
+   SpringWebFlux实现方式有两种：注解编程模型和函数式编程模型
+
+   **SpringWebFlux（基于注解编程模型）**
+
+   使用注解编程模型方式，和之前SpringMVC使用相似的，只需要把相关依赖配置到项目中，SpringBoot自动配置相关运行容器，默认情况下使用Netty服务器
+
+   ①创建SpringBoot工程，引入WebFlux依赖
+
+   ```xml
+   <!--webflux依赖-->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-webflux</artifactId>
+   </dependency>
+   <!--webflux依赖-->
+   <dependency>
+       <groupId>org.projectlombok</groupId>
+       <artifactId>lombok</artifactId>
+   </dependency>
+   ```
+
+   注意：webflux已包含reactor-core，如果项目中还导入reactor-core依赖，会导致依赖冲突报错：
+
+   ```java
+   Caused by: java.lang.ClassNotFoundException: reactor.core.scheduler.NonBlocking
+   	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:606) ~[na:na]
+   	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:168) ~[na:na]
+   	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:522) ~[na:na]
+   	... 45 common frames omitted
+   ```
+
+   解决方法：注释reactor-core依赖即可。
+
+   ②配置启动端口号
+
+   ```xml
+   server:
+     port: 8081
+   ```
+
+   ③创建包和相关的类
+
+   实体类
+
+   ```java
+   @Data
+   public class User {
+       private String name;
+       private String gender;
+       private Integer age;
+   
+       public User(String name, String gender, Integer age) {
+           this.name = name;
+           this.gender = gender;
+           this.age = age;
+       }
+   }
+   ```
+
+   接口
+
+   ```java
+   public interface UserService {
+       //根据ID查询
+       Mono<User> getUserById(int id);
+       //查询所有用户
+       Flux<User> getAllUser();
+       //添加用户
+       Mono<Void> saveUserInfo(Mono<User> user);
+   
+   }
+   ```
+
+   接口实现类
+
+   ```java
+   public class UserServiceImpl implements UserService {
+       //创建map集合存储数据,模拟数据库
+       private final Map<Integer,User> users = new HashMap<>();
+   
+       public UserServiceImpl() {
+           this.users.put(1,new User("lucy","f",20));
+           this.users.put(2,new User("jack","m",25));
+           this.users.put(3,new User("zoey","f",20));
+       }
+   
+       @Override
+       public Mono<User> getUserById(int id) {
+           return Mono.justOrEmpty(this.users.get(id));
+       }
+   
+       @Override
+       public Flux<User> getAllUser() {
+           return Flux.fromIterable(this.users.values());
+       }
+   
+       @Override
+       public Mono<Void> saveUserInfo(Mono<User> userMono) {
+           return userMono.doOnNext(person->{
+               //向Map集合里面放值
+               int id = users.size()+1;
+               users.put(id,person);
+           }).then(Mono.empty());
+       }
+   }
+   ```
+
+   controller
+
+   ```java
+   @RestController
+   public class UserController {
+       @Autowired
+       private UserService userService;
+       @GetMapping("/user/{id}")
+       public Mono<User> getUserId(@PathVariable int id){
+           return userService.getUserById(id);
+       }
+       @GetMapping("/user")
+       public Flux<User> getAllUsers(){
+           return userService.getAllUser();
+       }
+       @PostMapping("/saveuser")
+       public Mono<Void> addUser(@RequestBody User user){
+           Mono<User> userMono = Mono.just(user);
+           return userService.saveUserInfo(userMono);
+       }
+   }
+   ```
+
+   SpringMVC方式实现，同步阻塞的方式，基于SpringMVC+Servlet+Tomcat
+
+   SpringWebFlux方式实现，异步非阻塞方式，基于SpringWebFlux+Reactor+Netty
+
+   **SpringWebFlux（基于函数式编程模型）**
+
+   （1）在使用函数式编程模型操作时候，需要自己初始化服务器
+
+   （2）基于函数式编程模型时候，有两个核心接口：RouterFunction（实现路由功能，请求转发给对应的handler）和HandlerFunction（处理请求生成响应的函数）。核心任务定义两个函数式接口的实现并且启动需要的服务器。
+
+   （3）SpringWebFlux请求和响应不再是ServletRequest 和  ServletResponse，而是ServerRequest 和 ServerResponse
+
+   ①实体类和service与上面一致，创建Handler（具体实现）
+
+   ```java
+   public class UserHandler {
+       private final UserService userService;
+       public UserHandler(UserService userService){
+           this.userService = userService;
+       }
+       public Mono<ServerResponse> getUserById(ServerRequest request){
+            //获取id值
+           int userId= Integer.valueOf(request.pathVariable("id"));
+           //空值处理
+           Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+   
+           //调用service方法
+           Mono<User> userMono= this.userService.getUserById(userId);
+           //把userMono进行转换返回，使用Reactor操作符flatMap
+           return userMono.flatMap(person->ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(fromValue(person))).switchIfEmpty(notFound);
+       }
+       public Mono<ServerResponse> getAllUsers(ServerRequest request){
+           //调用service方法
+          Flux<User> users= this.userService.getAllUser();
+           //把userMono进行转换返回
+           return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(users,User.class);
+       }
+   
+       public Mono<ServerResponse> saveUser(ServerRequest request){
+           //获取user对象
+           Mono<User> userMono=request.bodyToMono(User.class);
+           //调用service方法
+           return ServerResponse.ok().build(this.userService.saveUserInfo(userMono));
+       }
+   }
+   ```
+
+   ②初始化服务器，编写Router
+
+   ```java
+     //1.创建Router路由
+       public RouterFunction<ServerResponse> routerFunction() {
+           UserService userService = new UserServiceImpl();
+           //创建Handler
+           UserHandler userHandler = new UserHandler(userService);
+           //创建路由的方法
+           return RouterFunctions.route(
+                   GET("/user/{id}").and(accept(APPLICATION_JSON)), userHandler::getUserById)
+                   .andRoute(GET("/user").and(accept(APPLICATION_JSON)), userHandler::getAllUsers);
+   
+       }
+   ```
+
+   
+
+   ③创建服务器完成适配
+
+   ```java
+   public void createReactorServer(){
+       //路由和handler适配
+       RouterFunction<ServerResponse> routerFunction = routerFunction();
+       HttpHandler httpHandler = toHttpHandler(routerFunction);
+       ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(httpHandler);
+       //创建服务器
+       HttpServer httpServer = HttpServer.create();
+       httpServer.handle(adapter).bindNow();
+   }
+   ```
+
+   ④webClient调用
+
+   ```java
+   public class Client {
+       public static void main(String[] args) {
+           WebClient webClient = WebClient.create("http://127.0.0.1:58582");
+           String id = "2";
+           User userResult = webClient.get().uri("/user/{id}",id).accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(User.class).block();
+           System.out.println(userResult.toString());
+           Flux<User> users = webClient.get().uri("/user").accept(MediaType.APPLICATION_JSON).retrieve().bodyToFlux(User.class);
+           users.map(stu->stu.getName()).buffer().doOnNext(System.out::println).blockFirst();
+       }
+   }
+   ```
 

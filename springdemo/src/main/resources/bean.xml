@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    <!--配置User对象创建-->
+    <bean id="user" class="org.example.spring.entity.User"></bean>
+    <!--set方式注入属性-->
+    <bean id="book" class="org.example.spring.entity.Book" scope="prototype">
+        <!--
+        name : 类中的属性名
+        value :属性注入的值
+        -->
+<!--        <property name="bookname" value="Spring入门到精通"></property>-->
+<!--        <property name="bookname" ><null/></property>-->
+        <!--属性值包含特殊符号
+        1.<>进行转义 &lt;&gt;
+        2.把带特殊符号内容写道CDATA
+        -->
+       <property name="bookname" >
+           <value><![CDATA[<<Java核心卷1>>]]></value>
+       </property>
+    </bean>
+
+    <!--有参构造-->
+    <bean id="book2" class="org.example.spring.entity.Book">
+        <constructor-arg name="bookname" value="Java入门到精通"></constructor-arg>
+    </bean>
+    <!--p空间注入-->
+    <bean id="book3" class="org.example.spring.entity.Book" p:bookname="Spring核心">
+    </bean>
+
+
+
+</beans>
